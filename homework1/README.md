@@ -5,3 +5,4 @@
 python3 -m venv .venv
 source homework1venv/bin/activate
 python -m pip install --upgrade pip pytest
+python -m pip install -r requirements.txt
