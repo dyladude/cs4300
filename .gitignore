@@ -1,0 +1,15 @@
+.venv/
+venv/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.coverage
+htmlcov/
+.pytest_cashe/
+
+.vscode/
+.idea/
+.DS_Store
