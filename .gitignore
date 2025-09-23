@@ -1,15 +1,26 @@
-.venv/
-venv/
-
+# Python caches
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
 
+# Virtual environments
+.venv/
+venv/
+homework1/homework1venv/
+homework1/bin/
+homework1/include/
+homework1/lib/
+homework1/lib64/
+homework1/pyvenv.cfg
+homework1/.Python
+
+# Coverage
 .coverage
 htmlcov/
-.pytest_cashe/
 
+# Editors / OS
 .vscode/
 .idea/
 .DS_Store
