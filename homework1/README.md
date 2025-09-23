@@ -1,6 +1,7 @@
-# Homework 1 Python and Pytest
+# Homework 1 — Python & Pytest
 
-## How to run
-python3 -m venv .venv --system-site-packages
-source .venv/bin/activate
-pytest
+## Setup (from the `homework1/` directory)
+```bash
+python3 -m venv .venv
+source homework1venv/bin/activate
+python -m pip install --upgrade pip pytest
