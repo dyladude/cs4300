@@ -12,6 +12,23 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+# Tell Django about the reverse-proxy + HTTPS
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+FORCE_SCRIPT_NAME = '/proxy/3000'  # make all reversed URLs include the proxy prefix
+
+# Make static + cookies use the prefix too (helps admin CSS and login state)
+STATIC_URL = f'{FORCE_SCRIPT_NAME}/static/'
+
+SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
+CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
+
+# CSRF must trust your site origin (no path, include scheme)
+CSRF_TRUSTED_ORIGINS = [
+    "https://editor-dylantrentcontainer-20.devedu.io",
+]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -118,7 +135,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
