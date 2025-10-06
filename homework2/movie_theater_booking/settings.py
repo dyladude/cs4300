@@ -10,138 +10,119 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+"""
+Django settings for movie_theater_booking project.
+"""
 from pathlib import Path
+import os
+import dj_database_url
 
-# Tell Django about the reverse-proxy + HTTPS
-USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-FORCE_SCRIPT_NAME = '/proxy/3000'  # make all reversed URLs include the proxy prefix
-
-# Make static + cookies use the prefix too (helps admin CSS and login state)
-STATIC_URL = f'{FORCE_SCRIPT_NAME}/static/'
-
-SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
-CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
-
-# CSRF must trust your site origin (no path, include scheme)
-CSRF_TRUSTED_ORIGINS = [
-    "https://editor-dylantrentcontainer-20.devedu.io",
-]
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ---------- Core toggles ----------
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-not-secure")
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    # Render gives you the external hostname; trust it for CSRF
+    CSRF_TRUSTED_ORIGINS = [f"https://{RENDER_EXTERNAL_HOSTNAME}"]
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kke6%6n*+t#7=fn18w%^+(glve88mow@9aaz%8b5vady7ib%yq'
+# Behind reverse proxies (DevEdu/Render)
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# ---------- DevEdu proxy (classroom) ----------
+# Only turn this on in your container by exporting DEVEDU=1
+if os.environ.get("DEVEDU") == "1":
+    FORCE_SCRIPT_NAME = "/proxy/3000"
+    STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
+    # Keep cookies scoped to the proxy path so admin/login work in DevEdu
+    SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
+    CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
+else:
+    # Normal paths (Render/local dev)
+    STATIC_URL = "/static/"
 
-ALLOWED_HOSTS = ["*"] # Allows anything for now
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'   
-LOGOUT_REDIRECT_URL = '/'   
-
-# Application definition
-
+# ---------- Apps ----------
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-     # third party
-    'rest_framework',
-    # the app
-    'bookings',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    # third-party
+    "rest_framework",
+    # local
+    "bookings",
 ]
 
+# ---------- Middleware ----------
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "movie_theater_booking.middleware.FixProxyRedirectMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # serve static files
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "movie_theater_booking.middleware.FixProxyRedirectMiddleware",  # safe no-op when no prefix
 ]
 
-ROOT_URLCONF = 'movie_theater_booking.urls'
+ROOT_URLCONF = "movie_theater_booking.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / "templates"],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'movie_theater_booking.wsgi.application'
+WSGI_APPLICATION = "movie_theater_booking.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+# ---------- Database ----------
+# Render sets DATABASE_URL; locally it falls back to sqlite
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
+# ---------- Password validation ----------
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+# ---------- I18N / TZ ----------
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
-
 USE_TZ = True
 
+# ---------- Static files ----------
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
