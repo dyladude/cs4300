@@ -4,12 +4,10 @@
 <h2 class="mb-3">Book a Seat: {{ movie.title }}</h2>
 
 <meta name="bookings-endpoint" content="{% url 'booking-list' %}">
-<meta name="login-url" content="{% url 'rest_framework:login' %}?next={{ request.path|urlencode }}">
+<meta name="login-url" content="{% url 'login' %}?next={{ request.path_info|urlencode }}">
 
 <div class="alert alert-info">
-  Click an <strong>Available</strong> button to book. Or use the API:
-  <code>POST {% url 'booking-list' %} {"movie_id": {{ movie.id }}, "seat_id": &lt;seat_id&gt;}</code>
-
+  Click an <strong>Available</strong> button to book. 
 </div>
 
 <table class="table table-striped align-middle">
@@ -43,21 +41,13 @@
 
 <script>
   (function () {
-    // Read endpoints from the meta tags we just added
     const ENDPOINT  = document.querySelector('meta[name="bookings-endpoint"]').content;
     const LOGIN_URL = document.querySelector('meta[name="login-url"]').content;
-    // CSRF token (make sure base.html includes: <meta name="csrf-token" content="{{ csrf_token }}">
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
   
     function setBusy(btn, busy) {
-      if (busy) {
-        btn.dataset.prevText = btn.textContent;
-        btn.textContent = "Booking...";
-        btn.disabled = true;
-      } else {
-        btn.textContent = btn.dataset.prevText || "Available";
-        btn.disabled = false;
-      }
+      if (busy) { btn.dataset.prevText = btn.textContent; btn.textContent = "Booking..."; btn.disabled = true; }
+      else { btn.textContent = btn.dataset.prevText || "Available"; btn.disabled = false; }
     }
   
     async function bookSeat(movieId, seatId, btn) {
@@ -66,45 +56,31 @@
         const res = await fetch(ENDPOINT, {
           method: "POST",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken
-          },
+          headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
           body: JSON.stringify({ movie_id: Number(movieId), seat_id: Number(seatId) })
         });
   
-        if (res.ok) {
-          // Success: refresh so the seat shows as booked
-          location.reload();
+        if (res.ok) { location.reload(); return; }
+  
+        // IMPORTANT: use our site login, not DRF’s
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = LOGIN_URL;   // e.g. /proxy/3000/accounts/login/?next=/book/3/
           return;
         }
   
-        if (res.status === 403) {
-          window.location.href = LOGIN_URL;
-          return;
-        }
-  
-        // Other errors: show a short message
-        let msg = "Booking failed.";
-        try {
-          const txt = await res.text();
-          msg = "Error " + res.status + ":\n" + txt.slice(0, 600);
-        } catch (_) {}
-        alert(msg);
-      } catch (err) {
-        alert("Network error: " + err);
+        const txt = await res.text().catch(()=>"");
+        alert("Error " + res.status + ":\n" + String(txt).slice(0, 600));
+      } catch (e) {
+        alert("Network error: " + e);
       } finally {
         setBusy(btn, false);
       }
     }
   
     document.querySelectorAll(".book-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        bookSeat(btn.dataset.movieId, btn.dataset.seatId, btn);
-      });
+      btn.addEventListener("click", () => bookSeat(btn.dataset.movieId, btn.dataset.seatId, btn));
     });
   })();
   </script>
-  
-  
+    
 {% endblock %}

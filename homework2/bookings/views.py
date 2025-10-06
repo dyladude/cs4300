@@ -63,8 +63,16 @@ class SeatViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def available(self, request):
-        qs = self.get_queryset().filter(booking_status=False)
-        return Response(SeatSerializer(qs, many=True).data)
+        movie_id = request.query_params.get('movie')
+        qs = self.get_queryset()
+        if movie_id:
+            # per-movie availability: exclude seats with a Booking for that movie
+            qs = qs.exclude(bookings__movie_id=movie_id)
+        else:
+            # legacy fallback (global flag)
+            qs = qs.filter(booking_status=False)
+        data = SeatSerializer(qs.order_by('seat_number'), many=True).data
+        return Response(data)
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.select_related('movie', 'seat', 'user')
