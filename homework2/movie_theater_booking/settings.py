@@ -70,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "movie_theater_booking.middleware.FixProxyRedirectMiddleware",
 ]
 
 ROOT_URLCONF = 'movie_theater_booking.urls'

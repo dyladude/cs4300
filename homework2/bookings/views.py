@@ -8,6 +8,8 @@ from django.db.models import Exists, OuterRef
 from .serializers import MovieSerializer, SeatSerializer, BookingSerializer
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+from django.conf import settings
+from django.contrib.auth.views import LoginView
 
 
 # Create your views here.
@@ -72,5 +74,24 @@ class BookingViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # limit to current user's bookings
         return self.queryset.filter(user=self.request.user)
+
+class CleanLoginView(LoginView):
+    """
+    Ensures the post-login redirect (the ?next= value) is prefix-less,
+    so the reverse proxy adds /proxy/3000 exactly once.
+    """
+    def get_success_url(self):
+        url = self.get_redirect_url()  # respects ?next=
+        if not url:
+            url = getattr(settings, "LOGIN_REDIRECT_URL", "/") or "/"
+
+        script = (getattr(settings, "FORCE_SCRIPT_NAME", "") or "")
+        if script and url.startswith(script):
+            url = url[len(script):] or "/"
+
+        # keep it local + absolute
+        if not url.startswith("/"):
+            url = "/" + url
+        return url
 
     

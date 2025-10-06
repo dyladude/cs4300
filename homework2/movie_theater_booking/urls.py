@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from bookings.views import (
-    MovieViewSet, SeatViewSet, BookingViewSet, movie_list, seat_booking, booking_history, signup,)
+    MovieViewSet, SeatViewSet, BookingViewSet, movie_list, seat_booking,
+     booking_history, signup, CleanLoginView, )
 from django.contrib.auth import views as auth_views
 
 
@@ -22,7 +23,7 @@ urlpatterns = [
     path('history/', booking_history, name='booking_history'),
 
     # auth (site)
-    path('accounts/login/',  auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('accounts/login/',  CleanLoginView.as_view(template_name='registration/login.html'), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('accounts/signup/', signup, name='signup'),
 ]

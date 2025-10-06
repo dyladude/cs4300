@@ -43,13 +43,21 @@
 
 <script>
   (function () {
-    const ENDPOINT = document.querySelector('meta[name="bookings-endpoint"]').content;
+    // Read endpoints from the meta tags we just added
+    const ENDPOINT  = document.querySelector('meta[name="bookings-endpoint"]').content;
     const LOGIN_URL = document.querySelector('meta[name="login-url"]').content;
+    // CSRF token (make sure base.html includes: <meta name="csrf-token" content="{{ csrf_token }}">
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
   
     function setBusy(btn, busy) {
-      if (busy) { btn.dataset.prevText = btn.textContent; btn.textContent = "Booking..."; btn.disabled = true; }
-      else { btn.textContent = btn.dataset.prevText || "Available"; btn.disabled = false; }
+      if (busy) {
+        btn.dataset.prevText = btn.textContent;
+        btn.textContent = "Booking...";
+        btn.disabled = true;
+      } else {
+        btn.textContent = btn.dataset.prevText || "Available";
+        btn.disabled = false;
+      }
     }
   
     async function bookSeat(movieId, seatId, btn) {
@@ -58,21 +66,30 @@
         const res = await fetch(ENDPOINT, {
           method: "POST",
           credentials: "include",
-          headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
+          },
           body: JSON.stringify({ movie_id: Number(movieId), seat_id: Number(seatId) })
         });
   
-        if (res.ok) { location.reload(); return; }
-  
-        if (res.status === 403) { window.location.href = LOGIN_URL; return; }
-  
-        let msg = "Booking failed.";
-        if (res.status === 400) {
-          const data = await res.json().catch(() => ({}));
-          msg = (data.detail || data.non_field_errors?.[0] || "Seat already booked or invalid.");
-        } else {
-          msg = "Error " + res.status + ": " + (await res.text()).slice(0, 200);
+        if (res.ok) {
+          // Success: refresh so the seat shows as booked
+          location.reload();
+          return;
         }
+  
+        if (res.status === 403) {
+          window.location.href = LOGIN_URL;
+          return;
+        }
+  
+        // Other errors: show a short message
+        let msg = "Booking failed.";
+        try {
+          const txt = await res.text();
+          msg = "Error " + res.status + ":\n" + txt.slice(0, 600);
+        } catch (_) {}
         alert(msg);
       } catch (err) {
         alert("Network error: " + err);
@@ -88,5 +105,6 @@
     });
   })();
   </script>
+  
   
 {% endblock %}
