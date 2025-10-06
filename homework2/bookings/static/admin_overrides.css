@@ -1,0 +1,98 @@
+/* ===== Brand & header ===== */
+#header {
+    background: #0b1220; /* deep navy */
+    border-bottom: 1px solid #1f2a44;
+  }
+  #branding h1, #branding h1 a { color: #fff !important; text-decoration: none; }
+  .djt-brand { font-weight: 700; letter-spacing: .2px; }
+  
+  /* ===== Modern buttons ===== */
+  .button, .deletelink, .submit-row input {
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+  .submit-row input.default {
+    background: #2563eb; /* indigo-600 */
+    border: none;
+  }
+  .submit-row input.default:hover { filter: brightness(1.05); }
+  
+  /* ===== Dashboard layout ===== */
+  .djt-dashboard { display: grid; gap: 20px; }
+  .djt-hero {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; background: #0f172a; color: #e5e7eb; border-radius: 14px;
+  }
+  .djt-hero h1 { margin: 0; font-size: 22px; }
+  .djt-hero .muted { margin: 4px 0 0; color: #9aa3b2; }
+  .djt-hero-actions { display: flex; gap: 10px; }
+  .btn { display: inline-block; padding: 8px 12px; border-radius: 10px; background: #1f2937; color: #e5e7eb; text-decoration: none; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn-primary { background: #2563eb; color: #fff; }
+  
+  .djt-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .card {
+    padding: 14px; background: #111827; border: 1px solid #22304f; border-radius: 14px; color: #e5e7eb; text-decoration: none;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .card p { margin: 0; color: #9aa3b2; }
+  
+  .section-title { font-size: 18px; margin: 4px 0 8px 2px; }
+  
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .app-card { background: #0b1220; border: 1px solid #1f2a44; border-radius: 14px; padding: 12px 14px; }
+  .app-card h3 { margin: 0 0 10px; color: #e5e7eb; font-size: 16px; }
+  .model-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .model-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #0f172a; border: 1px solid #1f2a44; border-radius: 10px; padding: 8px 10px;
+  }
+  .model-list a { color: #c7d2fe; text-decoration: none; }
+  .model-list a:hover { text-decoration: underline; }
+  .model-list .add-link {
+    margin-left: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: #2563eb;      /* indigo */
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .model-list .add-link:hover { filter: brightness(1.08); }
+  
+  /* ===== Make better use of space ===== */
+  #content { max-width: 1280px; }
+  #content h1 { margin-top: 6px; }
+  
+  /* ===== Sidebar toggle niceties (the big toggle box) ===== */
+  /* Always show the sidebar on wide screens, make toggle small & subtle */
+  @media (min-width: 1100px) {
+    body #nav-sidebar { transform: translateX(0) !important; box-shadow: none; }
+    body:not(.touch) .toggle-nav-sidebar { 
+      position: fixed; left: 12px; top: 74px; opacity: .6; border-radius: 10px; 
+    }
+    #content { margin-left: 260px; }               /* give content space beside sidebar */
+    #nav-sidebar { width: 240px; }
+  }
+  /* Sidebar colour pass */
+  #nav-sidebar { background: #0b1220; border-right: 1px solid #1f2a44; }
+  #nav-sidebar .current-model, #nav-sidebar .current-app { background: #111827; }
+  #nav-filter { background: transparent; }
+  
+  /* ===== Change list polish ===== */
+  .change-list .paginator { margin-top: 14px; }
+  thead th, .results th, .results td { vertical-align: middle; }
+  #changelist-filter { border-radius: 12px; }
+  
+  /* ===== Forms ===== */
+  .module caption, .module h2 { font-weight: 700; }
+  fieldset.module { border-radius: 12px; }
+  .inline-group h2 { margin-top: 8px; }
+  
+  /* ===== Login page minor tweaks ===== */
+  .login .submit-row { display: flex; gap: 8px; }
+  
+  #changelist-filter h2 { font-size: 13px; }
+#changelist-filter .filter-title { padding: 8px 10px; }
+.change-list #content-main { overflow-x: auto; }

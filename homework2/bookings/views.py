@@ -1,10 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from .models import Movie, Seat, Booking
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-from .models import Movie, Seat, Booking
+from django.db.models import Exists, OuterRef
 from .serializers import MovieSerializer, SeatSerializer, BookingSerializer
 
 
@@ -12,6 +12,29 @@ from .serializers import MovieSerializer, SeatSerializer, BookingSerializer
 
 def home(request):
     return HttpResponse("Movie app is running ")
+
+def movie_list(request):
+    movies = Movie.objects.all().order_by('title')
+    return render(request, 'bookings/movie_list.html', {'movies': movies})
+
+def seat_booking(request, movie_id):
+    movie = get_object_or_404(Movie, pk=movie_id)
+    seats = (
+        Seat.objects.order_by('seat_number')
+        .annotate(is_booked=Exists(
+            Booking.objects.filter(movie=movie, seat=OuterRef('pk'))
+        ))
+    )
+    return render(request, 'bookings/seat_booking.html', {'movie': movie, 'seats': seats})
+
+def booking_history(request):
+    bookings = []
+    if request.user.is_authenticated:
+        bookings = (Booking.objects
+                    .filter(user=request.user)
+                    .select_related('movie', 'seat')
+                    .order_by('-booking_date'))
+    return render(request, 'bookings/booking_history.html', {'bookings': bookings})
 
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()

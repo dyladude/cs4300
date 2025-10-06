@@ -44,6 +44,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"] # Allows anything for now
 
+LOGIN_REDIRECT_URL = '/djadmin/'   # proxy will add /proxy/3000
+LOGOUT_REDIRECT_URL = '/'          # proxy will add /proxy/3000
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -74,7 +77,7 @@ ROOT_URLCONF = 'movie_theater_booking.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        "DIRS": [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

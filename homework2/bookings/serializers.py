@@ -26,12 +26,12 @@ class BookingSerializer(serializers.ModelSerializer):
         # attach the logged-in user
         request = self.context['request']
         validated_data['user'] = request.user
-
+        movie = validated_data['movie']
         seat = validated_data['seat']
-        if seat.booking_status:
-            raise serializers.ValidationError("Seat already booked.")
-        seat.booking_status = True
-        seat.save()
+
+        # per-movie check
+        if Booking.objects.filter(movie=movie, seat=seat).exists():
+            raise serializers.ValidationError("That seat is already booked for this movie.")
 
         return super().create(validated_data)
 

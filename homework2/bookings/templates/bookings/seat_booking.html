@@ -1,0 +1,92 @@
+{% extends 'bookings/base.html' %}
+{% block title %}Book Seats{% endblock %}
+{% block content %}
+<h2 class="mb-3">Book a Seat: {{ movie.title }}</h2>
+
+<meta name="bookings-endpoint" content="{% url 'booking-list' %}">
+<meta name="login-url" content="{% url 'rest_framework:login' %}?next={{ request.path|urlencode }}">
+
+<div class="alert alert-info">
+  Click an <strong>Available</strong> button to book. Or use the API:
+  <code>POST {% url 'booking-list' %} {"movie_id": {{ movie.id }}, "seat_id": &lt;seat_id&gt;}</code>
+
+</div>
+
+<table class="table table-striped align-middle">
+  <thead><tr><th>Seat</th><th>Status</th><th>seat_id</th></tr></thead>
+  <tbody>
+    {% for s in seats %}
+    <tr>
+      <td>{{ s.seat_number }}</td>
+      <td>
+        {% if s.is_booked %}
+          <button class="btn btn-sm btn-danger" disabled>Booked</button>
+        {% else %}
+          <button
+            class="btn btn-sm btn-success book-btn"
+            data-seat-id="{{ s.id }}"
+            data-movie-id="{{ movie.id }}"
+            type="button"
+          >
+            Available
+          </button>
+        {% endif %}
+      </td>
+      <td>{% if not s.is_booked %}{{ s.id }}{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- invisible form tag ensures Django sets the CSRF cookie -->
+<form style="display:none">{% csrf_token %}</form>
+
+<script>
+  (function () {
+    const ENDPOINT = document.querySelector('meta[name="bookings-endpoint"]').content;
+    const LOGIN_URL = document.querySelector('meta[name="login-url"]').content;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
+  
+    function setBusy(btn, busy) {
+      if (busy) { btn.dataset.prevText = btn.textContent; btn.textContent = "Booking..."; btn.disabled = true; }
+      else { btn.textContent = btn.dataset.prevText || "Available"; btn.disabled = false; }
+    }
+  
+    async function bookSeat(movieId, seatId, btn) {
+      try {
+        setBusy(btn, true);
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+          body: JSON.stringify({ movie_id: Number(movieId), seat_id: Number(seatId) })
+        });
+  
+        if (res.ok) { location.reload(); return; }
+  
+        if (res.status === 403) { window.location.href = LOGIN_URL; return; }
+  
+        let msg = "Booking failed.";
+        if (res.status === 400) {
+          const data = await res.json().catch(() => ({}));
+          msg = (data.detail || data.non_field_errors?.[0] || "Seat already booked or invalid.");
+        } else {
+          msg = "Error " + res.status + ": " + (await res.text()).slice(0, 200);
+        }
+        alert(msg);
+      } catch (err) {
+        alert("Network error: " + err);
+      } finally {
+        setBusy(btn, false);
+      }
+    }
+  
+    document.querySelectorAll(".book-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        bookSeat(btn.dataset.movieId, btn.dataset.seatId, btn);
+      });
+    });
+  })();
+  </script>
+  
+{% endblock %}

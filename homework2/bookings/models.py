@@ -21,12 +21,15 @@ class Seat(models.Model):
 
 class Booking(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='bookings')
-    seat = models.OneToOneField(Seat, on_delete=models.PROTECT, related_name='booking')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
+    seat  = models.ForeignKey(Seat, on_delete=models.PROTECT, related_name='bookings')
+    user  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     booking_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-booking_date']
+        constraints = [
+            models.UniqueConstraint(fields=['movie', 'seat'], name='unique_movie_seat_booking')
+        ]
 
     def __str__(self):
         return f"{self.user} -> {self.movie} ({self.seat})"

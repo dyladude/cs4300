@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="djt-dashboard">
+  <header class="djt-hero">
+    <div>
+      <h1>🎬 Movie Theater Admin</h1>
+      <p class="muted">Quick actions and overview</p>
+    </div>
+    <div class="djt-hero-actions">
+      <a class="btn btn-primary" href="{% url 'admin:bookings_movie_add' %}">Add Movie</a>
+      <a class="btn" href="{% url 'admin:bookings_seat_add' %}">Add Seat</a>
+      <a class="btn" href="{% url 'admin:bookings_booking_changelist' %}">View Bookings</a>
+    </div>
+  </header>
+
+  <section class="djt-cards">
+    <a class="card" href="{% url 'admin:bookings_movie_changelist' %}">
+      <h3>Movies</h3>
+      <p>Manage titles, durations, release dates.</p>
+    </a>
+    <a class="card" href="{% url 'admin:bookings_seat_changelist' %}">
+      <h3>Seats</h3>
+      <p>Seat map (A–C, 1–10), create more rows fast.</p>
+    </a>
+    <a class="card" href="{% url 'admin:bookings_booking_changelist' %}">
+      <h3>Bookings</h3>
+      <p>Recent reservations by user and seat.</p>
+    </a>
+  </section>
+
+  <section class="djt-apps">
+    <h2 class="section-title">{% trans 'Applications' %}</h2>
+    <div class="app-grid">
+      {% for app in app_list %}
+      <div class="app-card">
+        <h3>{{ app.name }}</h3>
+        <ul class="model-list">
+          {% for model in app.models %}
+          <li>
+            {% if model.admin_url %}
+              <a href="{{ model.admin_url }}">{{ model.name }}</a>
+            {% else %}
+              {{ model.name }}
+            {% endif %}
+            {% if model.add_url %}
+              <a class="add-link" href="{{ model.add_url }}" aria-label="Add {{ model.name }}">Add</a>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% empty %}
+      <p>{% trans 'You don’t have permission to view or edit anything.' %}</p>
+      {% endfor %}
+    </div>
+  </section>
+  
+</div>
+{% endblock %}

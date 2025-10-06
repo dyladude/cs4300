@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{# Replace the breadcrumb so "Home" points to your site, not admin index #}
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'movie_list' %}">{% trans 'Home' %}</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="djt-logout">
+    <h1>{% trans 'Logged out' %}</h1>
+    <p>{% trans "Thanks for spending some quality time today." %}</p>
+
+    <p style="margin-top: 12px;">
+      <a class="button default" href="{% url 'admin:login' %}?next=/djadmin/">
+        {% trans 'Log in again' %}
+      </a>
+      <a class="button" href="{% url 'movie_list' %}" style="margin-left:8px;">
+        {% trans 'Go to site home' %}
+      </a>
+    </p>
+  </div>
+{% endblock %}
