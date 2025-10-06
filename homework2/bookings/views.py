@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Movie, Seat, Booking
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions
@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Exists, OuterRef
 from .serializers import MovieSerializer, SeatSerializer, BookingSerializer
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 
 
 # Create your views here.
@@ -36,6 +38,17 @@ def booking_history(request):
                     .order_by('-booking_date'))
     return render(request, 'bookings/booking_history.html', {'bookings': bookings})
 
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)             # auto-login after signup
+            return redirect('/')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
+
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
@@ -59,3 +72,5 @@ class BookingViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # limit to current user's bookings
         return self.queryset.filter(user=self.request.user)
+
+    

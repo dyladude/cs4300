@@ -44,8 +44,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"] # Allows anything for now
 
-LOGIN_REDIRECT_URL = '/djadmin/'   # proxy will add /proxy/3000
-LOGOUT_REDIRECT_URL = '/'          # proxy will add /proxy/3000
+LOGIN_REDIRECT_URL = '/'   
+LOGOUT_REDIRECT_URL = '/'   
 
 # Application definition
 
