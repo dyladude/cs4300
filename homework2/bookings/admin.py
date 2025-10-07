@@ -49,6 +49,6 @@ class SeatAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("movie", "seat", "user", "created_at")
+    list_display = ("movie", "seat", "user")
     search_fields = ("movie__title", "seat__seat_number", "user__username")
     list_filter = ("movie",)
