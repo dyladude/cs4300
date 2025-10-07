@@ -39,12 +39,15 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 if os.environ.get("DEVEDU") == "1":
     FORCE_SCRIPT_NAME = "/proxy/3000"
     STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
-    # Keep cookies scoped to the proxy path so admin/login work in DevEdu
     SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
     CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
+
+    # ➜ allow the DevEdu proxy host
+    ALLOWED_HOSTS = ["*"]
+    CSRF_TRUSTED_ORIGINS = ["https://editor-dylantrentcontainer-20.devedu.io"]
 else:
-    # Normal paths (Render/local dev)
     STATIC_URL = "/static/"
+
 
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
