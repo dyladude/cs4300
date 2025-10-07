@@ -1,18 +1,13 @@
 from django.contrib import admin, messages
-from .models import Movie, Seat, Booking
 from django.conf import settings
+from .models import Movie, Seat, Booking
 
-# Register your models here.
-
-admin.site.register(Movie)
-admin.site.register(Seat)
-admin.site.register(Booking)
-
+# Admin chrome
 admin.site.site_header = "Movie Theater Admin"
 admin.site.site_title = "Movie Theater Admin"
 admin.site.index_title = "Dashboard"
 
-# So "View site" / home links go to just 1 prefixed root
+# Make "View site" / home links use the correct root (handles DevEdu proxy)
 prefix = (getattr(settings, "FORCE_SCRIPT_NAME", "") or "").rstrip("/")
 admin.site.site_url = (prefix + "/") if prefix else "/"
 
